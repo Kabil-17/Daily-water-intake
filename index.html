@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="onboarding">
+        <div class="onboarding-contents">
+            <div class="logo"><img src="./asset/drop.svg" alt=""></div>
+            <div class="head">Daily Water Goal</div>
+            <div class="about">
+                <p class=" para">We'll calculate a personalized hydration</p>
+                <p class=" para">target based on your body weight.</p>
+            </div>
+            <div class="input-box">
+                <input type="number" class="weight" placeholder="0">
+                <span id="unit">kg</span>
+            </div>
+        </div>
+        <div class="recommended">Recommended: <span>35ml</span> per kg</div>
+        <button class="calculate">Calculate Goal</button>
+    </div>
+
+    <div class="dashboard">
+        <div class="top-level">
+            <div class="dash-date">Dashboard
+                <div class="date"></div>
+            </div>
+            <div class="streak">
+                <img src="./asset/fire.svg" alt="">
+                <span class="streak-counter"></span>
+                <span class="days"> Days</span>
+            </div>
+            <div class="toggle">
+                <img src="./asset/moon.svg" alt="">
+            </div>
+        </div>
+
+        <div class="dash-content">
+            <div class="circle">
+                <svg class="progress-ring" width="220" height="220">
+                    <circle class="bg" cx="110" cy="110" r="100"></circle>
+                    <circle class="progress" cx="110" cy="110" r="100"></circle>
+                </svg>
+                <div class="center">
+                    <div class="consumed">
+                        <img src="./asset/drop.svg" alt="">
+                        <div class="consumed-update">
+                            <span class="consumed-amt">0</span>
+                            <span class="unit">ml</span>
+                        </div>
+                        <div class="goal"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="message">Fresh start! Let’s fuel your focus</div>
+        </div>
+        <div class="consume">
+            <div class="consume-opt">
+                <div class="quick">Quick Add</div>
+                <div class="custom">Custom Amount</div>
+            </div>
+            <div class="quick-opt">
+                <div class="buttons ml" data-value="200">
+                    <div class="ml-img"><img src="./asset/cup-s.svg" alt=""></div>
+                    <div class="default">200</div>
+                    <div class="unit-q">ML</div>
+                </div>
+                <div class="buttons ml" data-value="350">
+                    <div class="ml-img"><img src="./asset/cup-l.svg" alt=""></div>
+                    <div class="default">350</div>
+                    <div class="unit-q">ML</div>
+                </div>
+                <div class="buttons ml" data-value="500">
+                    <div class="ml-img"><img src="./asset/bottle (1).svg" alt=""></div>
+                    <div class="default">500</div>
+                    <div class="unit-q">ML</div>
+                </div>
+            </div>
+            <div class="custom-opt">
+                <div class="input-opt"><input type="number" placeholder="ml?" class="custom-input"></div>
+                <button class="custom-btn">Add</button>
+            </div>
+        </div>
+        <div class="more-opt">
+            <div class="history">
+                <div class="his-logo"><img src="./asset/history.svg" alt=""></div>
+                <div class="his">History</div>
+            </div>
+            <div class="settings">
+                <div class="set-logo"><img src="./asset/settings.svg" alt=""></div>
+                <div class="set">Settings</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-content">
+        <div class="history-top">
+            <img class="back" src="./asset/left-arrow.svg" alt="">
+            <h2>History</h2>
+            <div class="spacer"></div>
+        </div>
+
+        <div class="current-streak">
+            <span class="badge">🔥 Current Streak</span>
+            <div class="days-streak"><span class="days-count">0</span> Days</div>
+        </div>
+
+        <div class="week-overview">
+            <div class="week-title">
+                <div class="week">Weekly Overview</div>
+                <div class="days">Last 7 Days</div>
+            </div>
+            <div class="goal-range">
+                <div class="barStick">
+                    <div class="bar1 bar"></div>
+                    <div class="day">M</div>
+                </div>
+                <div class="barStick">
+                    <div class="bar2 bar"></div>
+                    <div class="day">T</div>
+                </div>
+                <div class="barStick">
+                    <div class="bar3 bar"></div>
+                    <div class="day">W</div>
+                </div>
+                <div class="barStick">
+                    <div class="bar4 bar"></div>
+                    <div class="day">T</div>
+                </div>
+                <div class="barStick">
+                    <div class="bar5 bar"></div>
+                    <div class="day">F</div>
+                </div>
+                <div class="barStick">
+                    <div class="bar6 bar"></div>
+                    <div class="day">S</div>
+                </div>
+                <div class="barStick">
+                    <div class="bar7 bar"></div>
+                    <div class="day">S</div>
+                </div>
+            </div>
+        </div>
+        <div class="daily-breakdown">
+            <h2 class="daily-title"></h2>
+            <ul class="daily-data"></ul>
+        </div>
+    </div>
+
+    <div class="settings-content">
+        <div class="edit-goal">
+            <span class="eg">Goal:</span>
+            <span class="new-goal"><input type="number" id="goal-input"></span>ml
+        </div>
+        <div class="edit-weight">
+            <span class="ew">Weight:</span>
+            <span class="new-weight"><input type="number" id="weight-input"></span>kg
+        </div>
+        <button class="change">Change</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
