@@ -22,39 +22,35 @@ const history = document.querySelector(".history");
 const back = document.querySelector(".back");
 
 window.addEventListener("load", () => {
-    resetNewDay();
-    const savedWeight = Number(localStorage.getItem("userWeight")) || 0;
-    userWeight = savedWeight;
 
-    const savedStreak = Number(localStorage.getItem("streak")) || 0;
-    const savedGoal = Number(localStorage.getItem("goal")) || 0;
-    const savedConsume = Number(localStorage.getItem("consumed")) || 0;
-    const savedDashoffset = Number(localStorage.getItem("dashoffset")) || 628;
-    const savedPercent = Number(localStorage.getItem("percent")) || 0;
-    const savedDays = Number(localStorage.getItem("days"));
-    document.querySelector(".streak-counter").textContent = savedStreak;
+    // LOAD SAVED DATA FIRST
+    userWeight = Number(localStorage.getItem("userWeight")) || 0;
+    goal = Number(localStorage.getItem("goal")) || 0;
+    consumed = Number(localStorage.getItem("consumed")) || 0;
+    dashoffset = Number(localStorage.getItem("dashoffset")) || 628;
+    percent = Number(localStorage.getItem("percent")) || 0;
+    days = Number(localStorage.getItem("days")) || 0;
 
+    resetNewDay(); 
 
-    goal = savedGoal;
+    document.querySelector(".streak-counter").textContent =
+        Number(localStorage.getItem("streak")) || 0;
+
     if (userWeight && goal) {
         onboarding.style.display = "none";
         dashboard.style.display = "block";
     }
-    consumed = savedConsume;
-    dashoffset = savedDashoffset;
-    percent = savedPercent;
-    days = savedDays;
 
-    document.querySelector(".days-count").innerHTML = days;
-
+    document.querySelector(".days-count").textContent = days;
     consumedAmt.textContent = consumed;
     document.querySelector(".goal").textContent = `GOAL: ${goal} ML`;
-
     document.querySelector(".progress").style.strokeDashoffset = dashoffset;
+
     message.innerHTML = motivationMsg(Math.round(percent * 100));
     progress();
     renderWeeklyBars();
 });
+
 
 
 
@@ -230,11 +226,9 @@ function resetNewDay() {
     const today = new Date().toISOString().split('T')[0];
     const lastReset = localStorage.getItem("lastResetDate");
 
-    if (lastReset && lastReset !== today) {
-        saveDailyHistory();
-    }
-
     if (lastReset !== today) {
+        if (lastReset) saveDailyHistory();
+
         consumed = 0;
         percent = 0;
         dashoffset = 628;
@@ -243,21 +237,19 @@ function resetNewDay() {
         localStorage.setItem("percent", 0);
         localStorage.setItem("dashoffset", 628);
         localStorage.setItem("lastResetDate", today);
-        // renderWeeklyBars();
     }
 }
+
 
 // history
 history.addEventListener("click", () => {
     document.querySelector(".history-content").style.display = "flex";
     dashboard.style.display = "none";
     renderWeeklyBars();
-})
-
-back.addEventListener("click", () => {
+});
+back.addEventListener("click",()=>{
     document.querySelector(".history-content").style.display = "none";
     dashboard.style.display = "block";
-
 })
 
 // settings
@@ -330,37 +322,46 @@ function saveDailyHistory() {
     const key = date.toISOString().split("T")[0];
     const history = JSON.parse(localStorage.getItem("waterHistory")) || {};
 
-    history[key] = {
-        consumed,
-        goal
-    };
+    history[key] = consumed; // ✅ NUMBER ONLY
     localStorage.setItem("waterHistory", JSON.stringify(history));
 }
 
 
+// weekly data
 function renderWeeklyBars() {
     if (!goal) return;
+
     const history = JSON.parse(localStorage.getItem("waterHistory")) || {};
     const bars = document.querySelectorAll(".goal-range .bar");
+    const days = document.querySelectorAll(".goal-range .day");
 
     const today = new Date();
+    today.setHours(0,0,0,0);
 
-    // loop last 7 days (oldest → today)
+    // start from 6 days ago → today
     for (let i = 6; i >= 0; i--) {
-        const day = new Date(today);
-        day.setDate(today.getDate() - i);
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
 
-        const dateKey = day.toISOString().split("T")[0];
-        const dayData = history[dateKey];
-        const percent = dayData
-            ? Math.min(dayData.consumed / dayData.goal, 1): 0;
+        const key = d.toISOString().split("T")[0];
+        const consumedAmt = history[key] || 0;
+        const percent = Math.min(consumedAmt / goal, 1);
 
-        const bar = bars[6 - i]; // left → right mapping
+        const bar = bars[6 - i];
+        const label = days[6 - i];
+
         bar.style.height = `${percent * 100}%`;
+        bar.classList.toggle("active", percent >= 1);
 
-        bar.style.background = percent >= 1 ? "#2563eb" : "#dbeafe";
+        // optional weekday label
+        label.textContent = d
+            .toLocaleDateString("en-US", { weekday: "short" })
+            .charAt(0);
     }
 }
+
+
+
 
 
 

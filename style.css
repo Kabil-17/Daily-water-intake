@@ -3,15 +3,15 @@
 }
 body{
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-             Roboto, Inter, Helvetica, Arial, sans-serif;
+   font-family: "Inter", -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
 
 }
 /* onboarding */
 .onboarding{
     background-color: #f4f3f3;
-    display: none;                   /*change after completed */
+    display: flex;                   /*change after completed */
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -122,7 +122,7 @@ body{
 
 /* dashboard */
 .dashboard{
-    display: block;
+    display: none;
     width: 100%;
     padding: 30px 40px;
     background-color: #f4f3f3;
@@ -376,7 +376,7 @@ circle{
     min-height: 100vh;
     background-color: #f4f3f3;
     padding: 16px;
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 20px;
 }
@@ -451,6 +451,7 @@ circle{
 }
 .bar{
     width: 18px;
+    min-height: 4px;
     max-width: 24px;
     border-radius: 12px;
     background: #dbeafe;
@@ -494,12 +495,14 @@ body.dark .dashboard {
 }
 
 /* cards / boxes */
-body.dark .streak,
-body.dark .buttons.ml,
-body.dark .his-logo,
-body.dark .set-logo {
+body.dark .streak {
     background-color: #1f2937;
     box-shadow: none;
+}
+body.dark .buttons.ml,
+body.dark .his-logo,
+body.dark .set-logo{
+    color: #101010;
 }
 
 /* text */
@@ -517,12 +520,9 @@ body.dark .set {
     color: #9ca3af;
 }
 
-/* input boxes */
-body.dark .weight,
-body.dark .custom-input {
-    background-color: #111827;
-    color: #e5e7eb;
-    border-color: #374151;
+/* week overview */
+.week-title{
+    color: #101010;
 }
 
 /* toggle button */
@@ -539,3 +539,15 @@ body.dark .toggle img {
 body.dark .bg {
     stroke: #374151;
 }
+
+/* history */
+body.dark .history-content{
+    background-color: #1f2937;
+    color:#e5e7eb;
+}
+
+/* settings */
+body.dark .settings-content{
+    background-color: #1f2937;
+}
+
