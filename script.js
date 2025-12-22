@@ -322,46 +322,50 @@ function saveDailyHistory() {
     const key = date.toISOString().split("T")[0];
     const history = JSON.parse(localStorage.getItem("waterHistory")) || {};
 
-    history[key] = consumed; // ✅ NUMBER ONLY
+    history[key] = {
+        consumed: consumed,
+        goal: goal
+    };
+
     localStorage.setItem("waterHistory", JSON.stringify(history));
 }
 
 
+
+
 // weekly data
 function renderWeeklyBars() {
-    if (!goal) return;
-
     const history = JSON.parse(localStorage.getItem("waterHistory")) || {};
     const bars = document.querySelectorAll(".goal-range .bar");
     const days = document.querySelectorAll(".goal-range .day");
 
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
 
-    // start from 6 days ago → today
     for (let i = 6; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(today.getDate() - i);
 
         const key = d.toISOString().split("T")[0];
-        const consumedAmt = history[key] || 0;
-        const percent = Math.min(consumedAmt / goal, 1);
+        const dayData = history[key];
 
         const bar = bars[6 - i];
         const label = days[6 - i];
 
+        let percent = 0;
+
+        if (dayData && dayData.goal > 0) {
+            percent = Math.min(dayData.consumed / dayData.goal, 1);
+        }
+
         bar.style.height = `${percent * 100}%`;
         bar.classList.toggle("active", percent >= 1);
 
-        // optional weekday label
         label.textContent = d
             .toLocaleDateString("en-US", { weekday: "short" })
             .charAt(0);
     }
 }
-
-
-
 
 
 
@@ -372,4 +376,15 @@ function saveData() {
     localStorage.setItem("dashoffset", dashoffset)
     localStorage.setItem("percent", percent);
     localStorage.setItem("days", days);
+}
+
+function debugHistory() {
+    const history = JSON.parse(localStorage.getItem("waterHistory")) || {};
+    console.log("Water History:", history);
+    console.log("Goal:", goal);
+    
+    const bars = document.querySelectorAll(".goal-range .bar");
+    bars.forEach((bar, i) => {
+        console.log(`Bar ${i} height:`, bar.style.height);
+    });
 }
