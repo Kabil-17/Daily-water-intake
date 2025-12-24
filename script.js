@@ -5,6 +5,7 @@ let dashoffset;
 let consumed = 0;
 let percent;
 let days = 0;
+let toggleActive = false;
 const time = new Date().getHours();
 
 
@@ -21,6 +22,19 @@ const customOpt = document.querySelector(".custom-opt");
 const history = document.querySelector(".history");
 const back = document.querySelector(".back");
 
+function getTodayKey() {
+  return getLocalDateKey();
+}
+
+function loadHistory() {
+  return JSON.parse(localStorage.getItem("waterHistory")) || {};
+}
+
+function saveHistory(history) {
+  localStorage.setItem("waterHistory", JSON.stringify(history));
+}
+
+
 window.addEventListener("load", () => {
 
     // LOAD SAVED DATA FIRST
@@ -30,8 +44,13 @@ window.addEventListener("load", () => {
     dashoffset = Number(localStorage.getItem("dashoffset")) || 628;
     percent = Number(localStorage.getItem("percent")) || 0;
     days = Number(localStorage.getItem("days")) || 0;
-
-    resetNewDay(); 
+    toggleActive = JSON.parse(localStorage.getItem("toggle")) || false;
+    if(toggleActive){
+        document.body.classList.add("dark");
+    }
+    
+    resetNewDay();
+    renderWeeklyBars();
 
     document.querySelector(".streak-counter").textContent =
         Number(localStorage.getItem("streak")) || 0;
@@ -85,7 +104,7 @@ calculate.addEventListener("click", () => {
 
 //streak
 function updateDailyStreak() {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateKey();
     let streak = Number(localStorage.getItem("streak") || 0);
     const lastdate = localStorage.getItem("lastDateOfCompletion");
 
@@ -115,9 +134,9 @@ function updateDailyStreak() {
 
 //toggle theme
 const toggle = document.querySelector(".toggle");
-
 toggle.addEventListener("click", () => {
-    document.body.classList.toggle("dark");
+    const isDark = document.body.classList.toggle("dark");
+    localStorage.setItem("toggle",JSON.stringify(isDark));
 });
 
 //consume option
@@ -174,11 +193,38 @@ customBtn.addEventListener("click", () => {
 //progress
 function progress() {
     if (goal === 0) return;
+
     percent = Math.min(Math.max(consumed / goal, 0), 1);
-    message.innerHTML = motivationMsg(Math.round(percent * 100));
     dashoffset = 628 * (1 - percent);
-    document.querySelector(".progress").style.strokeDashoffset = `${dashoffset}`;
+
+    document.querySelector(".progress").style.strokeDashoffset = dashoffset;
+    message.innerHTML = motivationMsg(Math.round(percent * 100));
+
+    updateTodayHistory();
+    
 }
+
+//update today history
+function updateTodayHistory() {
+    const history = loadHistory();
+    const todayKey = getLocalDateKey();
+
+    let status = "not-started";
+
+    if (consumed > 0 && consumed < goal) status = "partial";
+    if (consumed >= goal) status = "completed";
+
+    history[todayKey] = {
+        consumed,
+        goal,
+        status
+    };
+
+    saveHistory(history);
+    // renderWeeklyBars();
+}
+
+
 // motivation message
 function motivationMsg(percentage) {
 
@@ -220,15 +266,32 @@ function motivationMsg(percentage) {
 }
 
 
-
 // reset on new day
 function resetNewDay() {
-    const today = new Date().toISOString().split('T')[0];
+    const todayKey = getLocalDateKey();
     const lastReset = localStorage.getItem("lastResetDate");
 
-    if (lastReset !== today) {
-        if (lastReset) saveDailyHistory();
+    if (lastReset !== todayKey) {
+        const history = loadHistory();
 
+        // Save yesterday's final state if it exists
+        if (lastReset) {
+            let yesterdayConsumed = Number(localStorage.getItem("consumed")) || 0;
+            let yesterdayGoal = Number(localStorage.getItem("goal")) || 0;
+
+            let status = "not-started";
+            if (yesterdayConsumed > 0 && yesterdayConsumed < yesterdayGoal) status = "partial";
+            if (yesterdayConsumed >= yesterdayGoal) status = "completed";
+
+            history[lastReset] = {
+                consumed: yesterdayConsumed,
+                goal: yesterdayGoal,
+                status
+            };
+            saveHistory(history);
+        }
+
+        // Only reset daily consumed, not userWeight or goal
         consumed = 0;
         percent = 0;
         dashoffset = 628;
@@ -236,9 +299,14 @@ function resetNewDay() {
         localStorage.setItem("consumed", 0);
         localStorage.setItem("percent", 0);
         localStorage.setItem("dashoffset", 628);
-        localStorage.setItem("lastResetDate", today);
+
+        // Always update lastResetDate
+        localStorage.setItem("lastResetDate", todayKey);
     }
 }
+
+
+
 
 
 // history
@@ -247,10 +315,11 @@ history.addEventListener("click", () => {
     dashboard.style.display = "none";
     renderWeeklyBars();
 });
+// history back button
 back.addEventListener("click",()=>{
     document.querySelector(".history-content").style.display = "none";
     dashboard.style.display = "block";
-})
+});
 
 // settings
 const settings = document.querySelector(".settings");
@@ -312,60 +381,48 @@ change.addEventListener("click", (e) => {
 });
 
 
-
-
-// save daily history
-function saveDailyHistory() {
-    const date = new Date();
-    date.setDate(date.getDate() - 1); // yesterday
-
-    const key = date.toISOString().split("T")[0];
-    const history = JSON.parse(localStorage.getItem("waterHistory")) || {};
-
-    history[key] = {
-        consumed: consumed,
-        goal: goal
-    };
-
-    localStorage.setItem("waterHistory", JSON.stringify(history));
-}
-
-
-
-
 // weekly data
 function renderWeeklyBars() {
-    const history = JSON.parse(localStorage.getItem("waterHistory")) || {};
+    const history = loadHistory();
     const bars = document.querySelectorAll(".goal-range .bar");
-    const days = document.querySelectorAll(".goal-range .day");
+    const labels = document.querySelectorAll(".goal-range .day");
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0,0,0,0);
 
-    for (let i = 6; i >= 0; i--) {
+    for (let i = 0; i < 7; i++) {
         const d = new Date(today);
-        d.setDate(today.getDate() - i);
+        d.setDate(today.getDate() - (6 - i));
 
-        const key = d.toISOString().split("T")[0];
-        const dayData = history[key];
-
-        const bar = bars[6 - i];
-        const label = days[6 - i];
+        const key = getLocalDateKey(d);
+        const bar = bars[i];
+        const label = labels[i];
 
         let percent = 0;
+        let completed = false;
 
-        if (dayData && dayData.goal > 0) {
-            percent = Math.min(dayData.consumed / dayData.goal, 1);
+        if (key === getTodayKey()) {
+            percent = goal ? consumed / goal : 0;
+            completed = consumed >= goal;
+        } else if (history[key]) {
+            percent = history[key].goal
+                ? history[key].consumed / history[key].goal
+                : 0;
+            completed = history[key].status === "completed";
         }
 
-        bar.style.height = `${percent * 100}%`;
-        bar.classList.toggle("active", percent >= 1);
+        bar.style.height = percent > 0
+            ? `${Math.max(percent * 100, 4)}%`
+            : "0%";
+
+        bar.classList.toggle("active", completed);
 
         label.textContent = d
             .toLocaleDateString("en-US", { weekday: "short" })
             .charAt(0);
     }
 }
+
 
 
 
@@ -387,4 +444,13 @@ function debugHistory() {
     bars.forEach((bar, i) => {
         console.log(`Bar ${i} height:`, bar.style.height);
     });
+}
+
+
+// local date
+function getLocalDateKey(date = new Date()) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
 }
