@@ -23,15 +23,15 @@ const history = document.querySelector(".history");
 const back = document.querySelector(".back");
 
 function getTodayKey() {
-  return getLocalDateKey();
+    return getLocalDateKey();
 }
 
 function loadHistory() {
-  return JSON.parse(localStorage.getItem("waterHistory")) || {};
+    return JSON.parse(localStorage.getItem("waterHistory")) || {};
 }
 
 function saveHistory(history) {
-  localStorage.setItem("waterHistory", JSON.stringify(history));
+    localStorage.setItem("waterHistory", JSON.stringify(history));
 }
 
 
@@ -45,10 +45,10 @@ window.addEventListener("load", () => {
     percent = Number(localStorage.getItem("percent")) || 0;
     days = Number(localStorage.getItem("days")) || 0;
     toggleActive = JSON.parse(localStorage.getItem("toggle")) || false;
-    if(toggleActive){
+    if (toggleActive) {
         document.body.classList.add("dark");
     }
-    
+
     resetNewDay();
     renderWeeklyBars();
 
@@ -136,7 +136,7 @@ function updateDailyStreak() {
 const toggle = document.querySelector(".toggle");
 toggle.addEventListener("click", () => {
     const isDark = document.body.classList.toggle("dark");
-    localStorage.setItem("toggle",JSON.stringify(isDark));
+    localStorage.setItem("toggle", JSON.stringify(isDark));
 });
 
 //consume option
@@ -201,7 +201,7 @@ function progress() {
     message.innerHTML = motivationMsg(Math.round(percent * 100));
 
     updateTodayHistory();
-    
+
 }
 
 //update today history
@@ -221,7 +221,6 @@ function updateTodayHistory() {
     };
 
     saveHistory(history);
-    // renderWeeklyBars();
 }
 
 
@@ -316,7 +315,7 @@ history.addEventListener("click", () => {
     renderWeeklyBars();
 });
 // history back button
-back.addEventListener("click",()=>{
+back.addEventListener("click", () => {
     document.querySelector(".history-content").style.display = "none";
     dashboard.style.display = "block";
 });
@@ -384,12 +383,17 @@ change.addEventListener("click", (e) => {
 // weekly data
 function renderWeeklyBars() {
     const history = loadHistory();
+
     const bars = document.querySelectorAll(".goal-range .bar");
     const labels = document.querySelectorAll(".goal-range .day");
+    const dailyData = document.querySelector(".daily-data");
+
+    dailyData.innerHTML = ""; // clear ONCE
 
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
 
+    /*render WEEKLY BARS*/
     for (let i = 0; i < 7; i++) {
         const d = new Date(today);
         d.setDate(today.getDate() - (6 - i));
@@ -398,17 +402,31 @@ function renderWeeklyBars() {
         const bar = bars[i];
         const label = labels[i];
 
+        let dayData;
+
+        if (key === getLocalDateKey()) {
+            dayData = {
+                consumed,
+                goal,
+                status:
+                    consumed >= goal
+                        ? "completed"
+                        : consumed > 0
+                        ? "partial"
+                        : "not-started"
+            };
+        } else {
+            dayData = history[key];
+        }
+
         let percent = 0;
         let completed = false;
 
-        if (key === getTodayKey()) {
-            percent = goal ? consumed / goal : 0;
-            completed = consumed >= goal;
-        } else if (history[key]) {
-            percent = history[key].goal
-                ? history[key].consumed / history[key].goal
+        if (dayData) {
+            percent = dayData.goal
+                ? dayData.consumed / dayData.goal
                 : 0;
-            completed = history[key].status === "completed";
+            completed = dayData.status === "completed";
         }
 
         bar.style.height = percent > 0
@@ -421,10 +439,96 @@ function renderWeeklyBars() {
             .toLocaleDateString("en-US", { weekday: "short" })
             .charAt(0);
     }
+
+    /*render DAILY CARDS*/
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i); // reverse
+
+        const key = getLocalDateKey(d);
+
+        let dayData;
+        let isToday = i === 0;
+
+        if (isToday) {
+            dayData = {
+                consumed,
+                goal,
+                status:
+                    consumed >= goal
+                        ? "completed"
+                        : consumed > 0
+                        ? "partial"
+                        : "not-started"
+            };
+        } else {
+            dayData = history[key];
+        }
+
+        if (dayData) {
+            createElements(key, dayData, isToday);
+        }
+    }
 }
 
 
+function createElements(dayKey, dayData, isToday = false) {
+    if (!dayData) return;
 
+    const dailyData = document.querySelector(".daily-data");
+
+    const daily = document.createElement("div");
+    daily.className = "daily";
+
+    // image
+    const img = document.createElement("img");
+    if (dayData.status === "completed") img.src = "./asset/check.svg";
+    else if (dayData.status === "not-started") img.src = "./asset/not.svg";
+    else img.src = "./asset/drop.svg";
+
+    const imgBg = document.createElement("div");
+    imgBg.className = "img-bg";
+    if(dayData.status === "completed") imgBg.style.backgroundColor ="#e5f6dcff";
+    imgBg.appendChild(img);
+
+    const dayImg = document.createElement("div");
+    dayImg.className = "day-img";
+    dayImg.appendChild(imgBg);
+
+    // text section
+    const goalStatus = document.createElement("div");
+    goalStatus.className = "goal-status";
+
+    const dayCurrent = document.createElement("div");
+    dayCurrent.className = "day-current in-daily";
+    dayCurrent.textContent = isToday
+        ? "Today"
+        : new Date(dayKey).toLocaleDateString("en-US", { weekday: "short" });
+
+    const goalText = document.createElement("div");
+    goalText.className = "goal-text status-daily";
+    goalText.textContent = `Goal : ${dayData.goal} ml`;
+
+    goalStatus.append(dayCurrent, goalText);
+    dayImg.appendChild(goalStatus);
+
+    // progress
+    const dailyProgress = document.createElement("div");
+    dailyProgress.className = "daily-progress";
+
+    const consumedWt = document.createElement("div");
+    consumedWt.className = "consumed in-daily";
+    consumedWt.textContent = `${dayData.consumed} ml`;
+
+    const dailyStatus = document.createElement("div");
+    dailyStatus.className = "daily-status status-daily";
+    dailyStatus.textContent = dayData.status;
+
+    dailyProgress.append(consumedWt, dailyStatus);
+
+    daily.append(dayImg, dailyProgress);
+    dailyData.appendChild(daily);
+}
 
 // local storage
 function saveData() {
@@ -435,16 +539,16 @@ function saveData() {
     localStorage.setItem("days", days);
 }
 
-function debugHistory() {
-    const history = JSON.parse(localStorage.getItem("waterHistory")) || {};
-    console.log("Water History:", history);
-    console.log("Goal:", goal);
-    
-    const bars = document.querySelectorAll(".goal-range .bar");
-    bars.forEach((bar, i) => {
-        console.log(`Bar ${i} height:`, bar.style.height);
-    });
-}
+// function debugHistory() {
+//     const history = JSON.parse(localStorage.getItem("waterHistory")) || {};
+//     console.log("Water History:", history);
+//     console.log("Goal:", goal);
+
+//     const bars = document.querySelectorAll(".goal-range .bar");
+//     bars.forEach((bar, i) => {
+//         console.log(`Bar ${i} height:`, bar.style.height);
+//     });
+// }
 
 
 // local date

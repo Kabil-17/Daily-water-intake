@@ -462,9 +462,55 @@ circle{
     background:#2563eb;
 }
 
+.daily-title{
+    margin-left: 150px;
+}
+.daily-data{
+    display: grid;
+    justify-content: center;
+}
+
 .day{
     font-size: 12px;
     color: #6b7280;
+}
+.daily{
+    width: 380px;
+    height: 100px;
+    border-radius: 15px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 12px;
+    justify-content: space-between;
+    z-index: 10px;
+}
+.in-daily{
+    font-size: 20px;
+    font-weight: 600;
+}
+.status-daily{
+    font-size: 15px;
+    font-weight: 500;
+    color: #a09b9b;
+}
+.day-img{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.img-bg{
+    height: 70px;
+    width: 70px;
+    border-radius: 50%;
+    background-color: rgba(214, 207, 207, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.img-bg img{
+    height: 30px;
 }
 .settings-content{
     display: none;
@@ -552,3 +598,6 @@ body.dark .settings-content{
     background-color: #1f2937;
 }
 
+body.dark .in-daily{
+    color: #101010;
+}
